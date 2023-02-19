@@ -45,13 +45,14 @@ module JWTSessions
         )
       end
 
-      def update_refresh(uid:, access_expiration:, access_uid:, csrf:, namespace: "")
+      def update_refresh(uid:, access_expiration:, access_uid:, csrf:, expiration:, namespace: "")
         update_refresh_fields(
           uid,
           namespace.to_s,
           csrf: csrf,
           access_expiration: access_expiration,
-          access_uid: access_uid
+          access_uid: access_uid,
+          expiration: expiration
         )
       end
 

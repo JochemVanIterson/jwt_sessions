@@ -69,17 +69,32 @@ module JWTSessions
       end
     end
 
-    def update(access_uid, access_expiration, csrf)
+    def update(access_uid, access_expiration, csrf, expiration = @expiration)
       @csrf              = csrf
       @access_uid        = access_uid
       @access_expiration = access_expiration
-      store.update_refresh(
+      @expiration        = expiration
+
+      # Create new token with updated payload
+      updated_refresh = {
         uid: uid,
         access_expiration: access_expiration,
         access_uid: access_uid,
         csrf: csrf,
         namespace: namespace
-      )
+      }
+      
+      # Insert :expiration only if store.update_refresh method accepts it.
+      # This is to support backward compatibility with older versions of custom stores.
+
+      # Check if parameters includes :expiration
+      update_refresh_parameters = store.method(:update_refresh).parameters
+      if update_refresh_parameters.select{|_, x| x == :expiration}.length > 0
+        updated_refresh[:expiration] = expiration
+      end
+
+      # Update refresh token in store using a key spread operator
+      store.update_refresh(**updated_refresh)
     end
 
     def destroy

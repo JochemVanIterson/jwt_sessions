@@ -65,6 +65,7 @@ class TestMemoryStoreAdapter < Minitest::Test
       access_expiration: expiration,
       access_uid: "access_uid",
       csrf: "csrf2",
+      expiration: expiration,
       namespace: ""
     )
     refresh = store.fetch_refresh("uid", "")

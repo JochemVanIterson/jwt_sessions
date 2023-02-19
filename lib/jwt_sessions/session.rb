@@ -10,7 +10,8 @@ module JWTSessions
                   :store,
                   :refresh_payload,
                   :namespace,
-                  :refresh_by_access_allowed
+                  :refresh_by_access_allowed,
+                  :renew_on_refresh
 
     def initialize(options = {})
       @store                     = options.fetch(:store, JWTSessions.token_store)
@@ -20,6 +21,7 @@ module JWTSessions
       @refresh_claims            = options.fetch(:refresh_claims, {})
       @namespace                 = options.fetch(:namespace, nil)
       @refresh_by_access_allowed = options.fetch(:refresh_by_access_allowed, false)
+      @renew_on_refresh          = options.fetch(:renew_on_refresh, false)
       @_access_exp               = options.fetch(:access_exp, nil)
       @_refresh_exp              = options.fetch(:refresh_exp, nil)
     end
@@ -221,7 +223,12 @@ module JWTSessions
     end
 
     def update_refresh_token
-      @_refresh.update(@_access.uid, @_access.expiration, @_csrf.encoded)
+      if @renew_on_refresh
+        @_refresh_exp = JWTSessions.custom_refresh_expiration(@_refresh_exp)
+      else
+        @_refresh_exp = @_refresh.expiration
+      end
+      @_refresh.update(@_access.uid, @_access.expiration, @_csrf.encoded, @_refresh_exp)
       @refresh_token = @_refresh.token
       link_access_to_refresh
     end

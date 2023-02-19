@@ -56,19 +56,23 @@ module JWTSessions
           access_expiration: access_expiration,
           access_uid: access_uid,
           csrf: csrf,
+          expiration: expiration,
           namespace: namespace
         )
         storage.call("HSET", key, :expiration, expiration)
         storage.call("EXPIREAT", key, expiration)
       end
 
-      def update_refresh(uid:, access_expiration:, access_uid:, csrf:, namespace: nil)
+      def update_refresh(uid:, access_expiration:, access_uid:, csrf:, expiration:, namespace: nil)
+        key = full_refresh_key(uid, namespace)
         storage.call("HMSET",
-          full_refresh_key(uid, namespace),
+          key,
           :csrf, csrf,
           :access_expiration, access_expiration,
           :access_uid, access_uid
         )
+        storage.call("HSET", key, :expiration, expiration)
+        storage.call("EXPIREAT", key, expiration)
       end
 
       def all_refresh_tokens(namespace)
