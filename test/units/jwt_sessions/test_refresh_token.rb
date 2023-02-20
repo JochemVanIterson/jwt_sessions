@@ -29,6 +29,17 @@ class TestRefreshToken < Minitest::Test
     token.destroy
   end
 
+  def test_update_expiration
+    new_access_uid = SecureRandom.uuid
+    old_access_expiration = token.access_expiration
+    old_refresh_expiration = token.expiration
+    token.update(new_access_uid, JWTSessions.access_expiration, csrf.encoded, JWTSessions.refresh_expiration)
+    assert_equal new_access_uid, token.access_uid
+    assert_equal true, old_access_expiration != token.access_expiration
+    assert_equal true, old_refresh_expiration != token.expiration
+    token.destroy
+  end
+
   def test_find
     found_token = JWTSessions::RefreshToken.find(token.uid, JWTSessions.token_store, nil)
     assert_equal found_token.access_uid, token.access_uid
